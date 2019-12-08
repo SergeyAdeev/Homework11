@@ -8,16 +8,16 @@ struct Stack {
     private var items: [Element] = []
     
     func peek() -> Element {
-        guard let topElement = items.first else { fatalError("This stack is empty.") }
+        guard let topElement = items.last else { fatalError("This stack is empty.") }
         return topElement
     }
     
     mutating func pop() -> Element {
-        return items.removeFirst()
+        return items.removeLast()
     }
   
     mutating func push(_ element: Element) {
-        items.insert(element, at: 0)
+        items.insert(element, at: items.count)
     }
     
     func isEmpty() -> Bool {
@@ -27,9 +27,15 @@ struct Stack {
             return false
         }
     }
+
+    mutating func clear() {
+        while(!(items.isEmpty)) {
+            items.removeLast()
+        }
+    }
 }
 
-private var stack = Stack()
+var stack = Stack()
 
 func compareBrackets(currentClosingBracket: Character, lastOpeningBracket: Character) -> Bool {
     if (currentClosingBracket == ")" && lastOpeningBracket == "(" ||
@@ -42,11 +48,16 @@ func compareBrackets(currentClosingBracket: Character, lastOpeningBracket: Chara
 }
 
 func checkLastBracket(character: Character) -> Bool {
-    let lastOpeningBracket = stack.peek().symbol
-    return compareBrackets(currentClosingBracket: character, lastOpeningBracket: lastOpeningBracket)
+    if stack.isEmpty() {
+        return false
+    } else {
+        let lastOpeningBracket = stack.peek().symbol
+        return compareBrackets(currentClosingBracket: character, lastOpeningBracket: lastOpeningBracket)
+    }
 }
 
 func checkBrackets(string: String) -> Int {
+    stack.clear()    
     var index = 0
     for character in string {
         index += 1
@@ -57,6 +68,7 @@ func checkBrackets(string: String) -> Int {
             if(checkLastBracket(character: character)) {
                 stack.pop()
             } else {
+                stack.clear()
                 return index
             }
         }
@@ -67,6 +79,15 @@ func checkBrackets(string: String) -> Int {
     } else {
         return -1
     }
+    return index
 }
 
-print(checkBrackets(string: "foo(bar[i)"))
+print(checkBrackets(string: "[]")) // -1
+print(checkBrackets(string: "{}[]")) // -1
+print(checkBrackets(string: "{")) // 1
+print(checkBrackets(string: "{[}")) // 3
+print(checkBrackets(string: "foo(bar)")) // -1
+print(checkBrackets(string: "foo(bar[i)")) // 10
+print(checkBrackets(string: "foo(bar[i])]")) // 12
+print(checkBrackets(string: ")]")) // 1
+print(checkBrackets(string: "foo(()")) // 4
